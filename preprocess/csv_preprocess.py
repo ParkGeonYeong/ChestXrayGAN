@@ -35,11 +35,11 @@ def read_csv_and_make_dir(csv, save_path_template=None, image_path=None, selecte
 
     :param save_path_template:
     str, your template of directory to save images. Name of disease will be concatenated later. You do not have to input existing directory only
-    ex) /home/usr/training/
+    ex) /home/usr/training
 
     :param image_path:
     str, your directory of whole image dataset.
-    ex) /home/usr/data/images/
+    ex) /home/usr/data/images
 
     :param selected_disease:
     list, selected name of disease for training
@@ -64,15 +64,11 @@ def read_csv_and_make_dir(csv, save_path_template=None, image_path=None, selecte
     print('INFO:start reading images...')
     for ind, disease in enumerate(disease_label_column):
         many_disease_or_not = disease.split('|')
-        if 'No Finding' in many_disease_or_not:
-            many_disease_or_not = [word.replace('No Finding', 'No_finding') for word in many_disease_or_not]
-        # ex) many_disease_or_not = ['Emphysema', 'Infiltration', 'Pleural_Thickening', 'Pneumothorax']
-        # ex) many_disease_or_not = ['No_Finding']
         for word in many_disease_or_not:
             if not word in selected_disease:
                 continue
-            path_to_save = save_path_template+word+'/'+image_index_column[ind]
-            img_tobe_load = image_path+image_index_column[ind]
+            path_to_save = os.path.join(save_path_template, word.replace('No Finding', 'No_Finding'), image_index_column[ind])
+            img_tobe_load = os.path.join(image_path, image_index_column[ind])
             copyfile(img_tobe_load, path_to_save)
     print('INFO:done')
 
@@ -83,7 +79,7 @@ def make_path(path_template, selected_disease):
 
     :param path_template:
     str, your template of directory
-    ex) /home/usr/training/
+    ex) /home/usr/training
 
     :param selected_disease:
     list, selected name of disease for training
@@ -96,16 +92,17 @@ def make_path(path_template, selected_disease):
         if disease == 'No Finding':
             disease = 'No_Finding'
             # mkdir do not allow space within word
-        new_path = path_template+disease+'/'
+        new_path = os.path.join(path_template, disease)
         if not (os.path.exists(new_path)):
             os.mkdir(new_path)
 
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='require file path')
-    parser.add_argument('--save_path_template', required=True, help='질병별로 폴더를 생성할 디렉토리, 예시 /home/usr/training/')
+    parser.add_argument('--save_path_template', required=True, help='질병별로 폴더를 생성할 디렉토리, 예시 /home/usr/training')
     parser.add_argument('--image_path', required=True, help='이미지 데이터셋 저장한 곳, 예시 /home/usr/images')
     args = parser.parse_args()
 
     # Change selected_disease what you want
-    read_csv_and_make_dir('~/pky/proj5/data/sample_labels.csv', save_path_template=args.save_path_template, image_path=args.image_path,
+    read_csv_and_make_dir('~/BiS800/proj5/data/sample_labels.csv', save_path_template=args.save_path_template, image_path=args.image_path,
                           selected_disease=hps.disease_group)
