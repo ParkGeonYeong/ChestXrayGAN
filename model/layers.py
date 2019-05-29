@@ -3,27 +3,21 @@ import numpy as np
 import tensorflow as tf
 
 
-def deconv(x, w, h, out_filters, stride=2, name="deconv"):
+def deconv(x, in_filters, h, w, out_filters, stride=2, kernel=5, stddev=0.2, name="deconv"):
     with tf.variable_scope(name):
-        x_size = tf.shape(x)[1]
-        y_size = tf.shape(x)[2]
-        in_filters = tf.shape(x)[-1]
         batch = tf.shape(x)[0]
+        output_shape = tf.stack([batch, h, w, out_filters])
 
-        output_shape = tf.stack([batch, 2 * x_size, 2 * y_size, out_filters])
-        N = in_filters * w * h
-
-        kernel = tf.get_variable('deconv_kernel', shape=[w, h, out_filters, in_filters],
-                                 dtype=tf.float32, initializer=tf.random_normal_initializer(stddev=tf.sqrt(2 / N)))
+        kernel = tf.get_variable('deconv_kernel', shape=[kernel, kernel, out_filters, in_filters],
+                                 dtype=tf.float32, initializer=tf.random_normal_initializer(stddev=stddev))
     return tf.nn.conv2d_transpose(x, kernel, output_shape=output_shape, strides=[1, stride, stride, 1])
 
 
-def conv(x, kernel_size, out_filters, stride=2, padding='SAME', name="conv"):
+def conv(x, in_filters, kernel_size, out_filters, stride=2, padding='SAME', stddev=0.02, name="conv"):
     with tf.variable_scope(name):
-        in_filters = tf.shape(x)[-1]
         N = in_filters * kernel_size * kernel_size
         kernel = tf.get_variable('kernel', shape=[kernel_size, kernel_size, in_filters, out_filters],
-                                 dtype=tf.float32, initializer=tf.random_normal_initializer(stddev=np.sqrt(2 / N)))
+                                 dtype=tf.float32, initializer=tf.random_normal_initializer(stddev=stddev))
         x = tf.nn.conv2d(x, kernel, strides=[1, stride, stride, 1], padding=padding)
     return x
 
@@ -58,7 +52,7 @@ def linear(input_, output_size, name="Linear", stddev=0.02, bias_start=0.0):
 class batch_norm(object):
   def __init__(self, epsilon=1e-5, momentum=0.9, name="batch_norm"):
     with tf.variable_scope(name):
-      self.epsilon  = epsilon
+      self.epsilon = epsilon
       self.momentum = momentum
       self.name = name
 

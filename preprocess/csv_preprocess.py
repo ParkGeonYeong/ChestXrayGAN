@@ -101,8 +101,9 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='require file path')
     parser.add_argument('--save_path_template', required=True, help='질병별로 폴더를 생성할 디렉토리, 예시 /home/usr/training')
     parser.add_argument('--image_path', required=True, help='이미지 데이터셋 저장한 곳, 예시 /home/usr/images')
+    parser.add_argument('--csv_path', required=True, help='csv 저장한 곳, 예시 /home/usr/data/example.csv')
     args = parser.parse_args()
 
     # Change selected_disease what you want
-    read_csv_and_make_dir('~/BiS800/proj5/data/sample_labels.csv', save_path_template=args.save_path_template, image_path=args.image_path,
+    read_csv_and_make_dir(args.csv_path, save_path_template=args.save_path_template, image_path=args.image_path,
                           selected_disease=hps.disease_group)
