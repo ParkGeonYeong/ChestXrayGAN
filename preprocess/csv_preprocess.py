@@ -55,7 +55,6 @@ def read_csv_and_make_dir(csv, save_path_template=None, image_path=None, selecte
         os.mkdir(save_path_template)
 
     original_file = pd.read_csv(csv)
-    assert len(original_file.index) == 5606
     make_path(save_path_template, selected_disease)
 
     disease_label_column = list(original_file.Finding_Labels)
@@ -106,4 +105,4 @@ if __name__=='__main__':
 
     # Change selected_disease what you want
     read_csv_and_make_dir(args.csv_path, save_path_template=args.save_path_template, image_path=args.image_path,
-                          selected_disease=hps.disease_group)
+                          selected_disease=disease_name)

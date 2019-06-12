@@ -50,6 +50,24 @@ def crop_resize(filelist, crop_width, newpath):
         cv2.imwrite(os.path.join(newpath, img_number), img)
         print("INFO:{} resized".format(img_number))
 
+def crop_resize_in_sess(img_batch, crop_width):
+    """
+    crop_resize_in_sess : Do not save images in separate folders. Just do resize directly in session
+    :param img_batch:
+    (N, H, W, 1)
+    """
+    nonzero_w = np.argwhere(img_batch>25)[:, 2]
+    med_w = int(np.median(nonzero_w))
+    if med_w < crop_width:
+        med_w = int(img_batch.shape[2] / 2)
+    crop_l, crop_h = med_w - crop_width, med_w + crop_width
+    img_batch = img_batch[:, crop_l:crop_h, crop_l:crop_h, :]
+    batch_size = img_batch.shape[0]
+    new_img_batch = np.zeros((batch_size, hps.resize, hps.resize, 1))
+    for row in range(batch_size):
+        new_img_batch[row, :, :, :] = np.expand_dims(cv2.resize(np.squeeze(img_batch[row, :, :, :]), dsize=(hps.resize, hps.resize), interpolation=cv2.INTER_AREA), -1)
+    return new_img_batch
+
 
 def parse_png(img_file):
     image_string = tf.read_file(img_file)
@@ -68,13 +86,13 @@ def get_all_png(names, template):
 def load_all(img_list):
     total_len = len(img_list)
     print("total length: ", total_len)
-    print(img_list)
     img_list = tf.constant(img_list)
 
     dataset = tf.data.Dataset.from_tensor_slices(img_list)
-    dataset = dataset.map(parse_png)
+    dataset = dataset.map(parse_png, num_parallel_calls=4)
     dataset = dataset.shuffle(10000).repeat()
     dataset = dataset.batch(hps.batch_size)
+    dataset = dataset.prefetch(1)
     print('Dataset is built')
 
     return dataset, total_len

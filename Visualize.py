@@ -10,6 +10,7 @@ def save_images(images, size, image_path):
 
 def imsave(images, size, path):
   image = np.squeeze(merge(images, size))
+  print(path)
   return scipy.misc.imsave(path, image)
 
 
@@ -43,3 +44,20 @@ def image_manifold_size(num_images):
     manifold_w = int(np.ceil(np.sqrt(num_images)))
     assert manifold_h * manifold_w == num_images
     return manifold_h, manifold_w
+
+
+def closest_divisor(number):
+    divisors = []
+    t_num = int(number / 2)
+
+    divisors.append(number)
+    while t_num >= 1:
+        if number % t_num == 0:
+            divisors.append(t_num)
+        t_num -= 1
+
+    if np.mod(len(divisors), 2) == 1:
+        w, h = divisors[len(divisors)//2], divisors[len(divisors)//2]
+    else:
+        w, h = divisors[len(divisors)//2-1], divisors[len(divisors)//2]
+    return w, h
